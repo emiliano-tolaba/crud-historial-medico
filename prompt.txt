@@ -1,0 +1,31 @@
+
+"""
+Desarrollar un programa de Historial médico en Python, que muestre un menú interactivo en consola. 
+El menú debe permitir al usuario elegir:
+
+1. Crear paciente (debe solicitar al usuario ingresar Nombre, Telefono, Email)
+
+2. Buscar paciente (se le solicitará al usuario ingresar el nombre, en caso de no encontrarlo, se mostrará la lista total de pacientes.
+La lista deberá mostrar el ID y TODOS los datos del paciente, una vez mostrada, solicitar ingresar el ID del paciente SÓLO si no lo encontró por el nombre.
+Finalmente, luego de seleccionar el paciente (en los siguientes submenus, deberá imprimir los datos de ese paciente) imprimirá las opciones:
+    1. Actualizar paciente (mostrar un submenu con las opciones: 1. Datos personales (no debe pedir todos los datos, sino mostrar un menu de cual dato desea modificar (nombre, telefono, email)).
+    2. Datos medicos (1. Diagnostico, 2. Tratamiento)), 2. Eliminar paciente (pedir confirmacion)).
+
+3. Mostrar lista pacientes (se mostrará la lista total de pacientes)
+4. Guardar agenda en CSV
+5. Recuperar ultima agenda guardada
+6. Salir
+
+Aclaraciones importantes
+
+Realizar el Menú usando un bucle While. 
+Utilizaremos ademas una lista para almacenar los datos. 
+La opción "4. Guardar agenda" deberá guardar los datos en un archivo CSV
+Cada submenú deberá tener su opcion "Volver atras"
+No usar diccionario, solo listas
+Documentar cada linea del programa 
+Usar estructuras de control if, elif y else para gestionar las elecciones del menú. 
+Limpiar la consola antes de mostrar el menú, utilizando os.system('cls') (solo para sistemas Windows). Opcional MAC y Linux
+Colocar las pausas necesarias para mostrar la información / resultados. 
+Usar la estructura FOR para recorrer la lista de datos.
+Cada vez que muestre el menu debe limpiarse la pantalla antes.
