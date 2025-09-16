@@ -1,6 +1,12 @@
 import os
 import csv
 import time
+from validaciones import(validar_texto,
+    validar_telefono,
+    validar_email,
+    validar_id_paciente,
+    validar_pacientes_cargados,
+    confirmar_accion)
 
 # Lista principal para almacenar los pacientes
 pacientes = []
@@ -22,7 +28,7 @@ def mostrar_un_paciente(id_paciente):
 # Función para mostrar todos los pacientes
 def mostrar_pacientes():
     limpiar_pantalla()
-    if not validar_pacientes_cargados():
+    if not validar_pacientes_cargados(pacientes):
         print("No existen pacientes cargados")
         return
     
@@ -32,32 +38,6 @@ def mostrar_pacientes():
 
     for i, _ in enumerate(pacientes): # El segundo valor (el paciente) no se utiliza directamente en este bloque, por eso se reemplaza con "_" como convención para variables ignoradas.                    
         mostrar_un_paciente(i)
-
-# Función que verifica si el ID ingresado corresponde a un paciente existente en la lista.
-# Recibe por parámetro el ID del paciente
-# Retorna True si el ID está dentro del rango válido (mayor o igual a 0 y menor que la cantidad de pacientes).
-def validar_id_paciente(id):
-    if id > -1 and id < len(pacientes):     
-        return True  
-
-# Valida que el texto ingresado sea adecuado para campos como nombre o diagnóstico.
-# La función retorna True si:
-# - El texto no está vacío ni compuesto solo por espacios.
-# - Todos los caracteres son letras o espacios (no se permiten números ni símbolos).
-def validar_texto(cadena):
-    return cadena.strip() != "" and all(caracter.isalpha() or caracter.isspace() for caracter in cadena)
-
-# Validación de teléfono: debe contener solo dígitos
-def validar_telefono(telefono):
-    return telefono.isdigit()
-
-# Validación de email: debe contener "@" y "."
-def validar_email(email):
-    return "@" in email and "." in email
-
-# Verifica si hay pacientes cargados en la lista.
-def validar_pacientes_cargados():
-    return len(pacientes) > 0
 
 
 # Función para crear un nuevo paciente. Se piden los datos personales y se asignan los datos medicos sin definir
@@ -96,7 +76,7 @@ def crear_paciente():
 def modificar_paciente():
     limpiar_pantalla()
 
-    if not validar_pacientes_cargados():
+    if not validar_pacientes_cargados(pacientes):
         print("No existen pacientes cargados")
         pausar_pantalla()
         return
@@ -123,7 +103,7 @@ def modificar_paciente():
 
         try:                        # Se intenta convertir la entrada a entero; si no es válida (por ejemplo, letras), se captura el error con try-except.
             id_paciente = int(input("\nIngrese el ID del paciente que desea seleccionar: "))    
-            if validar_id_paciente(id_paciente):            # Valida que exista el ID en la lista
+            if validar_id_paciente(id_paciente, pacientes):            # Valida que exista el ID en la lista
                 mostrarSubmenu_paciente(id_paciente)
             else:
                 print("ID inválido.")
@@ -184,17 +164,13 @@ def actualizar_paciente(id_paciente):
 # Elimina un paciente de la lista según su ID, previa confirmación del usuario.
 # Muestra un mensaje de confirmación y, si el usuario acepta, elimina al paciente y pausa la pantalla.
 def eliminar_paciente(id_paciente):
-    # Solicita confirmación al usuario antes de eliminar
-    confirmar = input("¿Está seguro que desea eliminar este paciente? (s/n): ")
-    
-    # Si la respuesta es afirmativa (sin importar mayúsculas/minúsculas)
-    if confirmar.lower() == "s":
-        pacientes.pop(id_paciente)                  # Elimina al paciente de la lista usando su índice
+    if confirmar_accion("¿Está seguro que desea eliminar este paciente? (s/n): "):      # Solicita confirmación al usuario antes de eliminar
+        pacientes.pop(id_paciente)
         print("Paciente eliminado.")
-        pausar_pantalla()
     else:
-        print("Eliminacion cancelada.")
-        pausar_pantalla()
+        print("Eliminación cancelada.")
+    pausar_pantalla()
+
 
 # Submenú para actualizar datos personales
 # Recibe por parámetro el ID del paciente
@@ -274,26 +250,31 @@ def actualizar_datos_medicos(id_paciente):
 # Guarda la lista completa de pacientes en un archivo CSV llamado 'agenda_medica.csv'.
 # Se usa codificación UTF-8 para asegurar compatibilidad con caracteres especiales.
 def guardar_agenda():
-    with open("agenda_medica.csv", "w", newline='', encoding='utf-8') as archivo:       # Cada paciente se escribe como una fila, manteniendo el orden de los campos: nombre, teléfono, email, diagnóstico y tratamiento.
-        escritor = csv.writer(archivo)
-        for paciente in pacientes:
-            escritor.writerow(paciente)
+    if confirmar_accion("Desea guardar los datos de la agenda? (s/n): "):    
+        with open("agenda_medica.csv", "w", newline='', encoding='utf-8') as archivo:       # Cada paciente se escribe como una fila, manteniendo el orden de los campos: nombre, teléfono, email, diagnóstico y tratamiento.
+            escritor = csv.writer(archivo)
+            for paciente in pacientes:
+                escritor.writerow(paciente)
 
-    print("\nAgenda guardada exitosamente!")
+        print("\nAgenda guardada exitosamente!")
+    else:
+        print("\nAcción cancelada")
     pausar_pantalla()
 
 # Recupera la agenda médica desde el archivo CSV 'agenda_medica.csv'.
 def recuperar_agenda():
-    try:
-        with open("agenda_medica.csv", "r", encoding='utf-8') as archivo:   # Abre el archivo en modo lectura con codificación UTF-8 para soportar caracteres especiales.
-            lector = csv.reader(archivo)                                    # Crea un objeto lector que permite recorrer el archivo CSV línea por línea, interpretando cada fila como una lista de valores separados por comas.
-            pacientes.clear()                                               # Limpia la lista actual de pacientes
-            for fila in lector:                                             # Carga cada fila del archivo como un nuevo paciente.
-                pacientes.append(fila)
-        print("\nAgenda recuperada exitosamente!")
-    except FileNotFoundError:                           # Si el archivo no existe (por ejemplo, en la primera ejecución), se captura el error y se informa al usuario.
-        print("\nNo se encontró una agenda guardada previamente.")
-    
+    if confirmar_accion("Desea recuperar la agenda? (s/n): "):
+        try:
+            with open("agenda_medica.csv", "r", encoding='utf-8') as archivo:   # Abre el archivo en modo lectura con codificación UTF-8 para soportar caracteres especiales.
+                lector = csv.reader(archivo)                                    # Crea un objeto lector que permite recorrer el archivo CSV línea por línea, interpretando cada fila como una lista de valores separados por comas.
+                pacientes.clear()                                               # Limpia la lista actual de pacientes
+                for fila in lector:                                             # Carga cada fila del archivo como un nuevo paciente.
+                    pacientes.append(fila)
+            print("\nAgenda recuperada exitosamente!")
+        except FileNotFoundError:                           # Si el archivo no existe (por ejemplo, en la primera ejecución), se captura el error y se informa al usuario.
+            print("\nNo se encontró una agenda guardada previamente.")
+    else:
+        print("\nAcción cancelada")
     pausar_pantalla()
 
 # Programa principal con menú interactivo
@@ -317,9 +298,10 @@ while True:
     elif opcion == "5":
         recuperar_agenda()
     elif opcion == "6":
-        print("\nSaliendo del programa...")
-        time.sleep(1)
-        break
+        if confirmar_accion("¿Está seguro que desea salir del programa? (s/n): "):
+            print("\nSaliendo del programa...")
+            time.sleep(1)
+            break
     else:
         print("\nOpción inválida.")
         pausar_pantalla()
