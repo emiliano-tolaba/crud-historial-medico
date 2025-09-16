@@ -19,22 +19,46 @@ def mostrar_un_paciente(id_paciente):
         paciente = pacientes[id_paciente]
         print(f"ID: {id_paciente} | Nombre: {paciente[0]} | Teléfono: {paciente[1]} | Email: {paciente[2]} | Diagnóstico: {paciente[3]} | Tratamiento: {paciente[4]}")
 
-# Función que verifica si el ID ingresado corresponde a un paciente existente en la lista.
-# Recibe por parámetro el ID del paciente
-# Retorna True si el ID está dentro del rango válido (mayor o igual a 0 y menor que la cantidad de pacientes).
-def validar_id_paciente(id):
-    if id > -1 and id < len(pacientes):     
-        return True                         
-
 # Función para mostrar todos los pacientes
 def mostrar_pacientes():
     limpiar_pantalla()
+    if not validar_pacientes_cargados():
+        print("No existen pacientes cargados")
+        return
+    
     print("╔════════════════════════════════════╗")
     print("║  ****** LISTA DE PACIENTES ******  ║")
     print("╚════════════════════════════════════╝\n")
 
     for i, _ in enumerate(pacientes): # El segundo valor (el paciente) no se utiliza directamente en este bloque, por eso se reemplaza con "_" como convención para variables ignoradas.                    
         mostrar_un_paciente(i)
+
+# Función que verifica si el ID ingresado corresponde a un paciente existente en la lista.
+# Recibe por parámetro el ID del paciente
+# Retorna True si el ID está dentro del rango válido (mayor o igual a 0 y menor que la cantidad de pacientes).
+def validar_id_paciente(id):
+    if id > -1 and id < len(pacientes):     
+        return True  
+
+# Valida que el texto ingresado sea adecuado para campos como nombre o diagnóstico.
+# La función retorna True si:
+# - El texto no está vacío ni compuesto solo por espacios.
+# - Todos los caracteres son letras o espacios (no se permiten números ni símbolos).
+def validar_texto(cadena):
+    return cadena.strip() != "" and all(caracter.isalpha() or caracter.isspace() for caracter in cadena)
+
+# Validación de teléfono: debe contener solo dígitos
+def validar_telefono(telefono):
+    return telefono.isdigit()
+
+# Validación de email: debe contener "@" y "."
+def validar_email(email):
+    return "@" in email and "." in email
+
+# Verifica si hay pacientes cargados en la lista.
+def validar_pacientes_cargados():
+    return len(pacientes) > 0
+
 
 # Función para crear un nuevo paciente. Se piden los datos personales y se asignan los datos medicos sin definir
 def crear_paciente():
@@ -44,9 +68,23 @@ def crear_paciente():
     print("║    ****** CREAR PACIENTE ******    ║")
     print("╚════════════════════════════════════╝\n")
 
-    nombre = input("Ingrese el nombre del paciente: ")
-    telefono = input("Ingrese el teléfono del paciente: ")
-    email = input("Ingrese el email del paciente: ")
+    while True:
+        nombre = input("Ingrese el nombre del paciente: ")
+        if validar_texto(nombre):
+            break
+        print("El nombre no puede estar vacío.")
+
+    while True:
+        telefono = input("Ingrese el teléfono del paciente: ")
+        if validar_telefono(telefono):
+            break
+        print("El teléfono debe contener solo números.")
+
+    while True:
+        email = input("Ingrese el email del paciente: ")
+        if validar_email(email):
+            break
+        print("El email ingresado no es válido.")
     
     # Se agregan campos vacíos para diagnóstico y tratamiento
     pacientes.append([nombre, telefono, email, "Sin definir", "Sin definir"])
@@ -57,6 +95,12 @@ def crear_paciente():
 # Función para modificar paciente. Permite acceder a las opciones "actualizar" y "eliminar" paciente
 def modificar_paciente():
     limpiar_pantalla()
+
+    if not validar_pacientes_cargados():
+        print("No existen pacientes cargados")
+        pausar_pantalla()
+        return
+    
     print("╔════════════════════════════════════╗")
     print("║  ****** MODIFICAR PACIENTE ******  ║")
     print("╚════════════════════════════════════╝\n")
@@ -165,21 +209,34 @@ def actualizar_datos_personales(id_paciente):
         
         opcion = input("\nSeleccione una opción: ")
         if opcion == "1":
-            pacientes[id_paciente][0] = input("Nuevo nombre: ")
-            print("Se ha actualizado el dato del paciente")
-            pausar_pantalla()
+            while True:
+                pacientes[id_paciente][0] = input("Nuevo nombre: ")
+                if validar_texto(pacientes[id_paciente][0]):
+                    print("Se ha actualizado el dato del paciente")
+                    pausar_pantalla()
+                    break
+                print("Sólo se permiten ingresar letras. Ingrese nuevamente")
         elif opcion == "2":
-            pacientes[id_paciente][1] = input("Nuevo teléfono: ")
-            print("Se ha actualizado el dato del paciente")
-            pausar_pantalla()
+            while True:
+                pacientes[id_paciente][1] = input("Nuevo teléfono: ")
+                if validar_telefono(pacientes[id_paciente][1]):
+                    print("Se ha actualizado el dato del paciente")
+                    pausar_pantalla()
+                    break
+                print("El teléfono debe contener solo números.")
         elif opcion == "3":
-            pacientes[id_paciente][2] = input("Nuevo email: ")
-            print("Se ha actualizado el dato del paciente")
-            pausar_pantalla()
+            while True:
+                pacientes[id_paciente][2] = input("Nuevo email: ")
+                if validar_email(pacientes[id_paciente][2]):
+                    print("Se ha actualizado el dato del paciente")
+                    pausar_pantalla()
+                    break
+                print("El email ingresado no es válido. ")
         elif opcion == "4":
             break
         else:
             print("Opción inválida.")
+
 
 # Submenú para actualizar datos médicos
 # Recibe por parámetro el ID del paciente
@@ -194,13 +251,21 @@ def actualizar_datos_medicos(id_paciente):
         
         opcion = input("\nSeleccione una opción: ")
         if opcion == "1":
-            pacientes[id_paciente][3] = input("Nuevo diagnóstico: ")
-            print("Se ha actualizado el dato del paciente")
-            pausar_pantalla()
+            while True:
+                pacientes[id_paciente][3] = input("Nuevo diagnóstico: ")
+                if validar_texto(pacientes[id_paciente][3]):
+                    print("Se ha actualizado el dato del paciente")
+                    pausar_pantalla()
+                    break
+                print("Sólo se permiten ingresar letras. Ingrese nuevamente")
         elif opcion == "2":
-            pacientes[id_paciente][4] = input("Nuevo tratamiento: ")
-            print("Se ha actualizado el dato del paciente")
-            pausar_pantalla()
+            while True:
+                pacientes[id_paciente][4] = input("Nuevo tratamiento: ")
+                if validar_texto(pacientes[id_paciente][4]):
+                    print("Se ha actualizado el dato del paciente")
+                    pausar_pantalla()
+                    break
+                print("Sólo se permiten ingresar letras. Ingrese nuevamente")
         elif opcion == "3":
             break
         else:
